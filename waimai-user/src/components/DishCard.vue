@@ -14,10 +14,10 @@
         <el-button 
           type="primary" 
           circle
-          size="small"
+          size="large"
           @click="handleAddToCart"
         >
-          <el-icon><Plus /></el-icon>
+          <el-icon :size="20"><Plus /></el-icon>
         </el-button>
       </div>
     </div>
@@ -100,6 +100,7 @@ const handleAddToCart = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 8px;
 }
 
 .dish-price {
@@ -116,5 +117,11 @@ const handleAddToCart = () => {
   color: #999;
   text-decoration: line-through;
   margin-left: 4px;
+}
+
+:deep(.el-button.is-circle) {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 20px;
 }
 </style> 

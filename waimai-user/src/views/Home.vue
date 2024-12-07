@@ -22,7 +22,7 @@
           @click="goToShop(shop.id)"
         >
           <div class="shop-image">
-            <img :src="`/images/shops/${shop.image}`" :alt="shop.name">
+            <img :src="`${shop.image}`" :alt="shop.name">
           </div>
           <div class="shop-info">
             <h3 class="shop-name">{{ shop.name }}</h3>

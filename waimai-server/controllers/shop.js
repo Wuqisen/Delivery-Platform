@@ -131,7 +131,7 @@ const shopController = {
         msg: 'success',
         data: dishes.map(dish => ({
           ...dish,
-          imageUrl: dish.image ? `${req.protocol}://${req.get('host')}/uploads/dishes/${dish.image}` : null
+          imageUrl: dish.image ? `${dish.image}` : null
         }))
       });
     } catch (error) {

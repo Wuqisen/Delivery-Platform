@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { UPLOAD_PATH } = require('../config');
+const db = require('../config/db');
 
 // 确保基础上传目录存在
 if (!fs.existsSync(UPLOAD_PATH)) {
@@ -54,14 +55,8 @@ const uploadController = {
   // 上传单个图片
   async uploadImage(req, res) {
     try {
-      upload.single('image')(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-          return res.status(400).json({
-            code: 400,
-            msg: '文件上传失败：' + err.message,
-            data: null
-          });
-        } else if (err) {
+      upload.single('image')(req, res, async function (err) {
+        if (err) {
           return res.status(400).json({
             code: 400,
             msg: err.message,
@@ -69,15 +64,35 @@ const uploadController = {
           });
         }
 
-        // 文件上传成功
-        const type = req.params.type || 'others';
-        res.json({
-          code: 0,
-          msg: '上传成功',
-          data: {
-            url: `/uploads/${type}/${req.file.filename}`
-          }
-        });
+        try {
+          // 生成完整的图片URL
+          const baseUrl = `${req.protocol}://${req.get('host')}`;
+          const imageUrl = `${baseUrl}/uploads/${req.params.type}/${req.file.filename}`;
+          
+          // 将URL保存到image_urls表
+          const [result] = await db.query(
+            `INSERT INTO image_urls (
+              resource_type, resource_id, url, created_at
+            ) VALUES (?, ?, ?, NOW())`,
+            [req.params.type, '0', imageUrl]  // resource_id暂时用0，后续会更新
+          );
+
+          res.json({
+            code: 0,
+            msg: '上传成功',
+            data: {
+              url: imageUrl,
+              id: result.insertId
+            }
+          });
+        } catch (error) {
+          console.error('保存图片URL失败:', error);
+          res.status(500).json({
+            code: 500,
+            msg: '保存图片URL失败',
+            data: null
+          });
+        }
       });
     } catch (error) {
       console.error('文件上传失败:', error);
@@ -92,14 +107,8 @@ const uploadController = {
   // 上传多个图片
   async uploadImages(req, res) {
     try {
-      upload.array('images', 5)(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-          return res.status(400).json({
-            code: 400,
-            msg: '文件上传失败：' + err.message,
-            data: null
-          });
-        } else if (err) {
+      upload.array('images', 5)(req, res, async function (err) {
+        if (err) {
           return res.status(400).json({
             code: 400,
             msg: err.message,
@@ -107,15 +116,38 @@ const uploadController = {
           });
         }
 
-        // 文件上传成功
-        const urls = req.files.map(file => `/uploads/${file.filename}`);
-        res.json({
-          code: 0,
-          msg: '上传成功',
-          data: {
-            urls
+        try {
+          const baseUrl = `${req.protocol}://${req.get('host')}`;
+          const urls = [];
+          
+          // 保存每个图片的URL到数据库
+          for (const file of req.files) {
+            const imageUrl = `${baseUrl}/uploads/${req.params.type}/${file.filename}`;
+            const [result] = await db.query(
+              `INSERT INTO image_urls (
+                resource_type, resource_id, url, created_at
+              ) VALUES (?, ?, ?, NOW())`,
+              [req.params.type, '0', imageUrl]
+            );
+            urls.push({
+              url: imageUrl,
+              id: result.insertId
+            });
           }
-        });
+
+          res.json({
+            code: 0,
+            msg: '上传成功',
+            data: { urls }
+          });
+        } catch (error) {
+          console.error('保存图片URL失败:', error);
+          res.status(500).json({
+            code: 500,
+            msg: '保存图片URL失败',
+            data: null
+          });
+        }
       });
     } catch (error) {
       console.error('文件上传失败:', error);

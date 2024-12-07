@@ -11,9 +11,11 @@ const dishController = {
       let query = `
         SELECT 
           d.*,
-          c.name as category_name
+          c.name as category_name,
+          i.url as image_url
         FROM dishes d
         LEFT JOIN shop_categories c ON d.category_id = c.id
+        LEFT JOIN image_urls i ON i.resource_type = 'dish' AND i.resource_id = d.id
         WHERE d.shop_id = ?
       `
       const params = [shopId]
@@ -40,19 +42,12 @@ const dishController = {
 
       const [dishes] = await db.query(query, params)
 
-      // 处理图片URL
-      const baseUrl = `${req.protocol}://${req.get('host')}`
-      const formattedDishes = dishes.map(dish => ({
-        ...dish,
-        imageUrl: dish.image ? `${baseUrl}/uploads/dishes/${dish.image}` : null
-      }))
-
       res.json({
         code: 0,
         msg: 'success',
         data: {
           total: totalRows[0].total,
-          list: formattedDishes
+          list: dishes
         }
       })
     } catch (error) {
@@ -92,32 +87,31 @@ const dishController = {
 
   // 添加菜品
   async addDish(req, res) {
+    const conn = await db.getConnection()
     try {
+      await conn.beginTransaction()
+
       const shopId = req.merchant.shop_id
       const { name, categoryId, price, image, description = '', status = 1 } = req.body
 
-      // 检查分类是否存在
-      const [categories] = await db.query(
-        'SELECT id FROM shop_categories WHERE id = ? AND shop_id = ?',
-        [categoryId, shopId]
+      // 创建菜品
+      const [result] = await conn.query(
+        `INSERT INTO dishes (
+          shop_id, category_id, name, description, 
+          price, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+        [shopId, categoryId, name, description, price, status]
       )
 
-      if (categories.length === 0) {
-        return res.status(400).json({
-          code: 400,
-          msg: '分类不存在',
-          data: null
-        })
+      // 更新image_urls表中的resource_id
+      if (image) {
+        await conn.query(
+          `UPDATE image_urls SET resource_id = ? WHERE url = ?`,
+          [result.insertId.toString(), image]
+        )
       }
 
-      // 创建菜品
-      const [result] = await db.query(
-        `INSERT INTO dishes (
-          shop_id, category_id, name, image, description, 
-          price, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-        [shopId, categoryId, name, image, description, price, status]
-      )
+      await conn.commit()
 
       res.json({
         code: 0,
@@ -127,40 +121,32 @@ const dishController = {
         }
       })
     } catch (error) {
+      await conn.rollback()
       console.error('添加菜品失败:', error)
       res.status(500).json({
         code: 500,
         msg: '服务器错误',
         data: null
       })
+    } finally {
+      conn.release()
     }
   },
 
   // 更新菜品
   async updateDish(req, res) {
+    const conn = await db.getConnection()
     try {
+      await conn.beginTransaction()
+
       const shopId = req.merchant.shop_id
       const { id } = req.params
       const { name, categoryId, price, image, description, status } = req.body
 
-      // 检查菜品是否存在
-      const [dishes] = await db.query(
-        'SELECT id FROM dishes WHERE id = ? AND shop_id = ?',
-        [id, shopId]
-      )
-
-      if (dishes.length === 0) {
-        return res.status(404).json({
-          code: 404,
-          msg: '菜品不存在',
-          data: null
-        })
-      }
-
-      // 更新菜品
+      // 更新菜品基本信息
       const updates = []
       const params = []
-      
+
       if (name) {
         updates.push('name = ?')
         params.push(name)
@@ -173,10 +159,6 @@ const dishController = {
         updates.push('price = ?')
         params.push(price)
       }
-      if (image) {
-        updates.push('image = ?')
-        params.push(image)
-      }
       if (description !== undefined) {
         updates.push('description = ?')
         params.push(description)
@@ -188,11 +170,29 @@ const dishController = {
 
       if (updates.length > 0) {
         params.push(id, shopId)
-        await db.query(
+        await conn.query(
           `UPDATE dishes SET ${updates.join(', ')} WHERE id = ? AND shop_id = ?`,
           params
         )
       }
+
+      // 更新图片URL
+      if (image) {
+        // 先删除旧的图片URL
+        await conn.query(
+          'DELETE FROM image_urls WHERE resource_type = ? AND resource_id = ?',
+          ['dish', id.toString()]
+        )
+        // 添加新的图片URL
+        await conn.query(
+          `INSERT INTO image_urls (
+            resource_type, resource_id, url, created_at
+          ) VALUES ('dish', ?, ?, NOW())`,
+          [id.toString(), image]
+        )
+      }
+
+      await conn.commit()
 
       res.json({
         code: 0,
@@ -200,12 +200,15 @@ const dishController = {
         data: null
       })
     } catch (error) {
+      await conn.rollback()
       console.error('更新菜品失败:', error)
       res.status(500).json({
         code: 500,
         msg: '服务器错误',
         data: null
       })
+    } finally {
+      conn.release()
     }
   },
 

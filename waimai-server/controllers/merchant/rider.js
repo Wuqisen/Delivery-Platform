@@ -6,22 +6,6 @@ const riderController = {
     try {
       console.log('获取可用骑手列表')
       
-      // 检查riders表是否存在
-      const [tables] = await db.query(`
-        SELECT TABLE_NAME 
-        FROM information_schema.TABLES 
-        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'riders'
-      `, [process.env.DB_DATABASE])
-
-      if (tables.length === 0) {
-        console.error('riders表不存在')
-        return res.status(500).json({
-          code: 500,
-          msg: '系统未配置骑手信息',
-          data: null
-        })
-      }
-
       // 获取可用骑手
       const [riders] = await db.query(`
         SELECT 
@@ -30,7 +14,8 @@ const riderController = {
             WHEN status = 1 THEN '空闲'
             WHEN status = 2 THEN '配送中'
             WHEN status = 3 THEN '休息中'
-          END as status_text
+          END as status_text,
+          status
         FROM riders 
         WHERE status = 1
         ORDER BY rating DESC, total_orders DESC
@@ -106,20 +91,6 @@ const riderController = {
         return res.status(400).json({
           code: 400,
           msg: '骑手当前不可接单',
-          data: null
-        })
-      }
-
-      // 检查是否已有配送记录
-      const [deliveries] = await conn.query(
-        'SELECT id FROM order_deliveries WHERE order_id = ?',
-        [id]
-      )
-
-      if (deliveries.length > 0) {
-        return res.status(400).json({
-          code: 400,
-          msg: '该订单已分配骑手',
           data: null
         })
       }

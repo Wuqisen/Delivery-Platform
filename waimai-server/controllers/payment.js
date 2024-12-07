@@ -30,7 +30,7 @@ const paymentController = {
       );
 
       // 生成支付二维码（这里使用模拟数据）
-      const paymentUrl = `https://pay.example.com/pay/${orderId}`;
+      const paymentUrl = `https://wuqisen.oss-cn-hangzhou.aliyuncs.com/pay.png`;
       const qrcode = await QRCode.toDataURL(paymentUrl);
 
       res.json({

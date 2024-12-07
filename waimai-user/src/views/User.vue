@@ -1,7 +1,7 @@
 <template>
   <div class="user-page">
     <div class="user-info">
-      <el-avatar :size="64" :src="userInfo.avatar || '/default-avatar.png'" />
+      <el-avatar :size="64" :src="userInfo.avatar" />
       <div class="info-content">
         <h3>{{ userInfo.nickname }}</h3>
         <p>{{ userInfo.phone }}</p>

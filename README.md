@@ -121,7 +121,7 @@ cpolar http 3001
 
 ### 3. 配置文件修改：
 
-#### a. 修改前端请求配置 (`waimai-user/src/utils/request.js`):
+#### a. 修改前端请求配置 (`waimai-user/src/utils/request.js`) 和生产环境:
 
 ```javascript
 const request = axios.create({

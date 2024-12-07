@@ -179,9 +179,9 @@ const orderController = {
 
         order.items = items.map(item => ({
           ...item,
-          imageUrl: item.image ? `${req.protocol}://${req.get('host')}/uploads/dishes/${item.image}` : null
+          imageUrl: item.image ? `${item.image}` : null
         }));
-        order.shopImageUrl = order.shop_image ? `${req.protocol}://${req.get('host')}/uploads/shops/${order.shop_image}` : null;
+        order.shopImageUrl = order.shop_image ? `${order.shop_image}` : null;
       }
 
       res.json({

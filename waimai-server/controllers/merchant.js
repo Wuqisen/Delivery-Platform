@@ -28,8 +28,8 @@ const merchantController = {
 
       const merchant = merchants[0]
 
-      // 直接比较密码（临时测试用）
-      if (password !== '123456') {
+      // 验证密码
+      if (password !== merchant.password) {
         return res.status(400).json({
           code: 400,
           msg: '用户名或密码错误',
@@ -44,7 +44,6 @@ const merchantController = {
         { expiresIn: '7d' }
       )
 
-      // 返回商户信息
       res.json({
         code: 0,
         msg: 'success',
@@ -138,7 +137,7 @@ const merchantController = {
       if (!isMatch) {
         return res.status(400).json({
           code: 400,
-          msg: '原密��错误',
+          msg: '原密码错误',
           data: null
         })
       }

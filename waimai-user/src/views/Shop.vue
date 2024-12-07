@@ -1,7 +1,7 @@
 <template>
   <div class="shop-container">
     <div class="shop-header">
-      <img :src="`/images/shops/${shop.image}`" :alt="shop.name" class="shop-image">
+      <img :src="getImageUrl(shop.image)" :alt="shop.name" class="shop-image">
       <div class="shop-info">
         <h2>{{ shop.name }}</h2>
         <div class="shop-stats">
@@ -124,6 +124,16 @@ const handleCategoryChange = (tab) => {
 onMounted(() => {
   loadShopInfo()
 })
+
+// 添加处理图片URL的方法
+const getImageUrl = (url) => {
+  // 如果是完整的URL（以http或https开头），直接返回
+  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+    return url
+  }
+  // 否则返回原始路径
+  return url
+}
 </script>
 
 <style scoped>

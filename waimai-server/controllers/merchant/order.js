@@ -62,7 +62,7 @@ const orderController = {
 
         order.items = items.map(item => ({
           ...item,
-          imageUrl: item.image ? `${req.protocol}://${req.get('host')}/uploads/dishes/${item.image}` : null
+          imageUrl: item.image ? `${item.image}` : null
         }))
 
         // 格式化地址信息
