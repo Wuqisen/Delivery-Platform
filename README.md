@@ -50,16 +50,12 @@ cd delivery-platform
 cd waimai-user
 npm install
 
-# 用户端后端
+# 后端
 cd ../waimai-server
 npm install
 
 # 商家端前端
 cd ../waimai-merchant
-npm install
-
-# 商家端后端
-cd ../waimai-merchant-server
 npm install
 ```
 
@@ -121,7 +117,7 @@ cpolar http 3001
 
 ### 3. 配置文件修改：
 
-#### a. 修改前端请求配置 (`waimai-user/src/utils/request.js`) 和生产环境:
+#### a. 修改前端生产环境:
 
 ```javascript
 const request = axios.create({
