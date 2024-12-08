@@ -2,11 +2,21 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
+// 根据环境确定 baseURL
+// const getBaseURL = () => {
+//   // 生产环境
+//   if (process.env.NODE_ENV === 'production') {
+//     return 'https://57869f2b.r27.cpolar.top/api'
+//   }
+//   console.log('Current ENV:', process.env.NODE_ENV) // 调试用
+//   console.log('API URL:', process.env.VUE_APP_API_URL)
+//   // 开发环境
+//   // return 'http://localhost:3001/api'
+//   return process.env.VUE_APP_API_URL
+// }
 // 创建axios实例
 const request = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' 
-    ? 'http://57869f2b.r27.cpolar.top/api'  // 修改为新的后端地址
-    : 'http://localhost:3001/api',
+  baseURL: process.env.VUE_APP_API_URL,
   timeout: 5000,
   withCredentials: true  // 允许跨域携带 cookie
 })
@@ -14,7 +24,13 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
   config => {
-    // 从localStorage中获取token
+    // 添加调试日志
+    console.log('Request:', {
+      url: config.url,
+      method: config.method,
+      data: config.data
+    })
+    
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`

@@ -3,18 +3,21 @@ import router from '../router'
 import { ElMessage } from 'element-plus'
 
 // 根据环境确定 baseURL
-const getBaseURL = () => {
-  // 生产环境
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://57869f2b.r27.cpolar.top/api'
-  }
-  // 开发环境
-  return 'http://localhost:3001/api'
-}
+// const getBaseURL = () => {
+//   // 生产环境
+//   if (process.env.NODE_ENV === 'production') {
+//     return 'https://57869f2b.r27.cpolar.top/api'
+//   }
+//   console.log('Current ENV:', process.env.NODE_ENV) // 调试用
+//   console.log('API URL:', process.env.VUE_APP_API_URL)
+//   // 开发环境
+//   // return 'http://localhost:3001/api'
+//   return process.env.VUE_APP_API_URL
+// }
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: process.env.VUE_APP_API_URL,
   timeout: 5000,
   withCredentials: true
 })

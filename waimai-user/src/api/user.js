@@ -15,7 +15,10 @@ export const userAPI = {
     return request({
       url: '/user/login',
       method: 'post',
-      data
+      data: {
+        phone: data.phone,
+        password: data.password
+      }
     })
   },
 

@@ -94,6 +94,9 @@ const userController = {
   async login(req, res) {
     try {
       const { phone, password } = req.body;
+      
+      // 添加调试日志
+      console.log('Login attempt:', { phone, password });
 
       // 查询用户
       const [users] = await db.query(
@@ -104,7 +107,7 @@ const userController = {
       if (users.length === 0) {
         return res.status(400).json({
           code: 400,
-          msg: '用户不存在',
+          msg: '手机号或密码错误',
           data: null
         });
       }
@@ -116,7 +119,7 @@ const userController = {
       if (!isMatch) {
         return res.status(400).json({
           code: 400,
-          msg: '密码错误',
+          msg: '手机号或密码错误',
           data: null
         });
       }
@@ -130,7 +133,7 @@ const userController = {
 
       res.json({
         code: 0,
-        msg: '登录成功',
+        msg: 'success',
         data: {
           token,
           userInfo: {
@@ -145,7 +148,7 @@ const userController = {
       console.error('用户登录失败:', error);
       res.status(500).json({
         code: 500,
-        msg: '登录失败',
+        msg: '服务器错误',
         data: null
       });
     }
@@ -350,7 +353,7 @@ const userController = {
         });
       }
 
-      // 如果设为默认地址，先将其他地址设为非默认
+      // 如���设为默认地址，先将其他地址设为非默认
       if (is_default) {
         await db.query(
           'UPDATE addresses SET is_default = 0 WHERE user_id = ?',

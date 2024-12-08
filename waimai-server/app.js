@@ -9,8 +9,8 @@ app.use(cors({
   origin: [
     'http://localhost:8080',  // Vue 开发服务器
     'http://localhost:8081',  // 商户端开发服务器
-    'http://2b59c772.r27.cpolar.top',  // 前端 cpolar 域名
-    'https://2b59c772.r27.cpolar.top',
+    'http://10005e36.r27.cpolar.top',  // 前端 cpolar 域名
+    'https://10005e36.r27.cpolar.top',
     'http://57869f2b.r27.cpolar.top',  // 后端 cpolar 域名
     'https://57869f2b.r27.cpolar.top'
   ],
